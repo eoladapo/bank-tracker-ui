@@ -6,6 +6,7 @@ import { AuthGuard } from './components/auth/AuthGuard';
 import { ToastContainer } from './components/common/Toast/ToastContainer';
 import { LoadingSkeleton } from './components/common/LoadingSkeleton';
 import { OfflineIndicator } from './components/common/OfflineIndicator';
+import { ErrorBoundary } from './components/common/ErrorBoundary';
 import { useOffline } from './hooks';
 
 // Lazy load pages
@@ -156,9 +157,11 @@ const AppContent = () => {
 function App() {
   return (
     <Provider store={store}>
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
+      <ErrorBoundary>
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </ErrorBoundary>
     </Provider>
   );
 }
