@@ -11,18 +11,9 @@ const Login = lazy(() => import('./pages/Auth/Login'));
 const Register = lazy(() => import('./pages/Auth/Register'));
 const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'));
+const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const Transactions = lazy(() => import('./pages/Transactions/Transactions'));
 const TransactionDetail = lazy(() => import('./pages/Transactions/TransactionDetail'));
-
-// Placeholder for Dashboard (to be implemented in later tasks)
-const Dashboard = () => (
-  <div className="min-h-screen bg-bg-secondary flex items-center justify-center">
-    <div className="text-center">
-      <h1 className="text-4xl font-bold text-primary-700">Dashboard</h1>
-      <p className="mt-2 text-gray-600">Coming soon...</p>
-    </div>
-  </div>
-);
 
 // Loading fallback component
 const PageLoader = () => (
