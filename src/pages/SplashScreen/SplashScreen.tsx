@@ -85,7 +85,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
               transition={{ delay: 0.2, duration: 0.4 }}
               className="text-4xl font-bold text-splash-text tracking-tight"
             >
-              SpendWise
+              Spendar
             </motion.h1>
 
             {/* Tagline */}
@@ -95,7 +95,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({
               transition={{ delay: 0.3, duration: 0.4 }}
               className="mt-2 text-splash-text/80 text-base"
             >
-              Your personal finance companion
+              Track your spending, master your money
             </motion.p>
           </motion.div>
 
