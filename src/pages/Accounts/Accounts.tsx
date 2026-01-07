@@ -14,23 +14,7 @@ import { Button } from '../../components/common/Button';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 import { ConfirmModal } from '../../components/common/Modal';
 import { MainLayout } from '../../components/layout';
-
-// Mono Connect widget types
-declare global {
-  interface Window {
-    MonoConnect?: new (config: MonoConnectConfig) => MonoConnectInstance;
-  }
-}
-
-interface MonoConnectConfig {
-  key: string;
-  onSuccess: (data: { code: string }) => void;
-  onClose: () => void;
-}
-
-interface MonoConnectInstance {
-  open: () => void;
-}
+import { useMonoConnect } from '../../hooks/useMonoConnect';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -62,9 +46,27 @@ export const Accounts: React.FC = () => {
   const [unlinkModalOpen, setUnlinkModalOpen] = useState(false);
   const [accountToUnlink, setAccountToUnlink] = useState<string | null>(null);
 
-  // Navigation handler
+  const handleMonoSuccess = useCallback(async (code: string) => {
+    try {
+      await linkAccount({ code }).unwrap();
+      dispatch(addToast({ type: 'success', message: 'Bank account linked successfully!' }));
+      refetch();
+    } catch {
+      dispatch(addToast({ type: 'error', message: 'Failed to link account. Please try again.' }));
+    }
+  }, [linkAccount, dispatch, refetch]);
+
+  const { open: openMonoWidget, isScriptLoading, scriptError, retryLoadScript } = useMonoConnect({
+    onSuccess: handleMonoSuccess,
+  });
+
   const handleNavigate = useCallback((path: string) => {
     navigate(path);
+  }, [navigate]);
+
+  // Profile click handler
+  const handleProfileClick = useCallback(() => {
+    navigate('/profile');
   }, [navigate]);
 
   const handleSync = useCallback(async (accountId: string) => {
@@ -123,58 +125,7 @@ export const Accounts: React.FC = () => {
     setAccountToUnlink(null);
   }, []);
 
-
-  const handleLinkAccount = useCallback(() => {
-    const monoPublicKey = import.meta.env.VITE_MONO_PUBLIC_KEY;
-
-    if (!monoPublicKey) {
-      dispatch(
-        addToast({
-          type: 'error',
-          message: 'Mono Connect is not configured. Please contact support.',
-        })
-      );
-      return;
-    }
-
-    if (!window.MonoConnect) {
-      dispatch(
-        addToast({
-          type: 'error',
-          message: 'Mono Connect widget failed to load. Please refresh the page.',
-        })
-      );
-      return;
-    }
-
-    const monoConnect = new window.MonoConnect({
-      key: monoPublicKey,
-      onSuccess: async (data: { code: string }) => {
-        try {
-          await linkAccount({ code: data.code }).unwrap();
-          dispatch(
-            addToast({
-              type: 'success',
-              message: 'Bank account linked successfully!',
-            })
-          );
-          refetch();
-        } catch {
-          dispatch(
-            addToast({
-              type: 'error',
-              message: 'Failed to link account. Please try again.',
-            })
-          );
-        }
-      },
-      onClose: () => {
-        // User closed the widget without completing
-      },
-    });
-
-    monoConnect.open();
-  }, [linkAccount, dispatch, refetch]);
+  const isButtonDisabled = isLinking || isScriptLoading || !!scriptError;
 
   // Loading state
   if (isLoading) {
@@ -183,6 +134,7 @@ export const Accounts: React.FC = () => {
         userName={user?.name}
         activeNavItem={location.pathname}
         onNavigate={handleNavigate}
+        onProfileClick={handleProfileClick}
         showHeader={false}
         pageKey="accounts"
       >
@@ -206,6 +158,7 @@ export const Accounts: React.FC = () => {
         userName={user?.name}
         activeNavItem={location.pathname}
         onNavigate={handleNavigate}
+        onProfileClick={handleProfileClick}
         showHeader={false}
         pageKey="accounts"
       >
@@ -235,6 +188,7 @@ export const Accounts: React.FC = () => {
       userName={user?.name}
       activeNavItem={location.pathname}
       onNavigate={handleNavigate}
+      onProfileClick={handleProfileClick}
       showHeader={false}
       pageKey="accounts"
     >
@@ -242,15 +196,37 @@ export const Accounts: React.FC = () => {
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Bank Accounts</h1>
-        <Button
-          variant="primary"
-          onClick={handleLinkAccount}
-          isLoading={isLinking}
-          disabled={isLinking}
-        >
-          Link Account
-        </Button>
+        <div className="flex items-center gap-2">
+          {scriptError && (
+            <Button variant="secondary" onClick={retryLoadScript} size="sm">
+              Retry
+            </Button>
+          )}
+          <Button
+            variant="primary"
+            onClick={openMonoWidget}
+            isLoading={isLinking || isScriptLoading}
+            disabled={isButtonDisabled}
+          >
+            {isScriptLoading ? 'Loading...' : 'Link Account'}
+          </Button>
+          <button
+            onClick={handleProfileClick}
+            className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            aria-label="Profile"
+          >
+            <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </button>
+        </div>
       </div>
+
+      {scriptError && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          {scriptError}
+        </div>
+      )}
 
       {/* Empty State */}
       {!hasAccounts && (
@@ -271,11 +247,11 @@ export const Accounts: React.FC = () => {
           <Button
             variant="primary"
             size="lg"
-            onClick={handleLinkAccount}
-            isLoading={isLinking}
-            disabled={isLinking}
+            onClick={openMonoWidget}
+            isLoading={isLinking || isScriptLoading}
+            disabled={isButtonDisabled}
           >
-            Link Your First Account
+            {isScriptLoading ? 'Loading...' : 'Link Your First Account'}
           </Button>
         </motion.div>
       )}

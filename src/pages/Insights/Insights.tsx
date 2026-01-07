@@ -47,6 +47,11 @@ export const Insights: React.FC = () => {
     navigate(path);
   }, [navigate]);
 
+  // Profile click handler
+  const handleProfileClick = useCallback(() => {
+    navigate('/profile');
+  }, [navigate]);
+
   // Fetch insights data
   const {
     data: monthlyInsight,
@@ -94,6 +99,7 @@ export const Insights: React.FC = () => {
         userName={user?.name}
         activeNavItem={location.pathname}
         onNavigate={handleNavigate}
+        onProfileClick={handleProfileClick}
         showHeader={false}
         pageKey="insights"
       >
@@ -120,6 +126,7 @@ export const Insights: React.FC = () => {
         userName={user?.name}
         activeNavItem={location.pathname}
         onNavigate={handleNavigate}
+        onProfileClick={handleProfileClick}
         showHeader={false}
         pageKey="insights"
       >
@@ -144,13 +151,15 @@ export const Insights: React.FC = () => {
     );
   }
 
-  const hasData = monthlyInsight || categoryBreakdown;
+  const hasData = (monthlyInsight && (monthlyInsight.totalSpending > 0 || monthlyInsight.totalIncome > 0)) || 
+                   (categoryBreakdown && categoryBreakdown.length > 0);
 
   return (
     <MainLayout
       userName={user?.name}
       activeNavItem={location.pathname}
       onNavigate={handleNavigate}
+      onProfileClick={handleProfileClick}
       showHeader={false}
       pageKey="insights"
     >
@@ -158,18 +167,29 @@ export const Insights: React.FC = () => {
         {/* Header with Month Selector */}
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Insights</h1>
-          <select
-            value={selectedMonth}
-            onChange={handleMonthChange}
-            className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-            aria-label="Select month"
-          >
-            {monthOptions.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
+          <div className="flex items-center gap-2">
+            <select
+              value={selectedMonth}
+              onChange={handleMonthChange}
+              className="px-3 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              aria-label="Select month"
+            >
+              {monthOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={handleProfileClick}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              aria-label="Profile"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* Empty State */}
@@ -232,7 +252,7 @@ export const Insights: React.FC = () => {
                 </Card.Header>
                 <Card.Body>
                   <CategoryChart
-                    data={categoryBreakdown || monthlyInsight?.categoryData || []}
+                    data={categoryBreakdown || monthlyInsight?.categoryBreakdown?.categories || monthlyInsight?.categoryData || []}
                     onCategoryClick={handleCategoryClick}
                     variant="donut"
                     height={280}
@@ -244,7 +264,7 @@ export const Insights: React.FC = () => {
             {/* Top Spending Category */}
             {monthlyInsight?.topCategory && (
               <motion.div variants={itemVariants}>
-                <Card hoverable onClick={() => handleCategoryClick(monthlyInsight.topCategory)}>
+                <Card hoverable onClick={() => handleCategoryClick(monthlyInsight.topCategory!)}>
                   <Card.Body>
                     <div className="flex items-center justify-between">
                       <div>
@@ -252,9 +272,9 @@ export const Insights: React.FC = () => {
                         <p className="text-xl font-semibold text-gray-900 mt-1">
                           {monthlyInsight.topCategory}
                         </p>
-                        {monthlyInsight.categoryData && (
+                        {(monthlyInsight.categoryBreakdown?.categories || monthlyInsight.categoryData) && (
                           <p className="text-sm text-gray-600 mt-1">
-                            ₦{monthlyInsight.categoryData
+                            ₦{(monthlyInsight.categoryBreakdown?.categories || monthlyInsight.categoryData || [])
                               .find(c => c.category === monthlyInsight.topCategory)
                               ?.amount.toLocaleString('en-NG') || '0'}
                           </p>

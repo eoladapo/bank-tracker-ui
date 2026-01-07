@@ -79,6 +79,11 @@ export const Transactions: React.FC = () => {
     navigate(path);
   }, [navigate]);
 
+  // Profile click handler
+  const handleProfileClick = useCallback(() => {
+    navigate('/profile');
+  }, [navigate]);
+
   const {
     data: transactionsData,
     isLoading,
@@ -181,6 +186,7 @@ export const Transactions: React.FC = () => {
         userName={user?.name}
         activeNavItem={location.pathname}
         onNavigate={handleNavigate}
+        onProfileClick={handleProfileClick}
         showHeader={false}
         pageKey="transactions"
       >
@@ -204,6 +210,7 @@ export const Transactions: React.FC = () => {
         userName={user?.name}
         activeNavItem={location.pathname}
         onNavigate={handleNavigate}
+        onProfileClick={handleProfileClick}
         showHeader={false}
         pageKey="transactions"
       >
@@ -235,6 +242,7 @@ export const Transactions: React.FC = () => {
       userName={user?.name}
       activeNavItem={location.pathname}
       onNavigate={handleNavigate}
+      onProfileClick={handleProfileClick}
       showHeader={false}
       pageKey="transactions"
     >
@@ -271,13 +279,24 @@ export const Transactions: React.FC = () => {
 
         <div className="p-4">
           {/* Header */}
-          <div className="mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-            {transactionsData && (
-              <p className="text-sm text-gray-500 mt-1">
-                {transactionsData.total} transaction{transactionsData.total !== 1 ? 's' : ''}
-              </p>
-            )}
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
+              {transactionsData && (
+                <p className="text-sm text-gray-500 mt-1">
+                  {transactionsData.total} transaction{transactionsData.total !== 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+            <button
+              onClick={handleProfileClick}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+              aria-label="Profile"
+            >
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </button>
           </div>
 
           {/* Filters */}

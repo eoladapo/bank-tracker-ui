@@ -93,13 +93,15 @@ export interface PaginatedResponse<T> {
 
 // Insight Types
 export interface MonthlyInsight {
-  id: string;
   month: string;
   totalSpending: number;
   totalIncome: number;
-  topCategory: string;
-  categoryData: CategoryBreakdown[];
-  aiInsights: string | null;
+  netFlow?: number;
+  topCategory: string | null;
+  categoryBreakdown?: { categories: CategoryBreakdown[] };
+  categoryData?: CategoryBreakdown[];
+  transactionCount?: number;
+  aiInsights?: string | null;
 }
 
 export interface CategoryBreakdown {
@@ -112,6 +114,7 @@ export interface CategoryBreakdown {
 export interface MonthComparison {
   currentMonth: MonthlyInsight;
   previousMonth: MonthlyInsight;
+  percentageChange: number;
   spendingChange: number;
   incomeChange: number;
 }

@@ -21,6 +21,23 @@ export interface GetComparisonParams {
   previousMonth?: string; // Format: YYYY-MM (defaults to previous month)
 }
 
+// API Response types
+interface MonthlyInsightsResponse {
+  insights: MonthlyInsight;
+  message: string;
+}
+
+interface ComparisonResponse {
+  comparison: MonthComparison;
+  message: string;
+}
+
+interface CategoryBreakdownResponse {
+  month: string;
+  breakdown: { categories: CategoryBreakdown[] };
+  totalSpending: number;
+}
+
 export const insightsApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getMonthlyInsights: builder.query<MonthlyInsight, GetMonthlyInsightsParams>({
@@ -28,6 +45,7 @@ export const insightsApi = api.injectEndpoints({
         url: '/insights/monthly',
         params,
       }),
+      transformResponse: (response: MonthlyInsightsResponse) => response.insights,
       providesTags: ['Insights'],
     }),
 
@@ -36,6 +54,7 @@ export const insightsApi = api.injectEndpoints({
         url: '/insights/categories',
         params,
       }),
+      transformResponse: (response: CategoryBreakdownResponse) => response.breakdown?.categories || [],
       providesTags: ['Insights'],
     }),
 
@@ -44,6 +63,7 @@ export const insightsApi = api.injectEndpoints({
         url: '/insights/comparison',
         params,
       }),
+      transformResponse: (response: ComparisonResponse) => response.comparison,
       providesTags: ['Insights'],
     }),
 

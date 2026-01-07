@@ -8,11 +8,30 @@ export interface AnomalyAlertProps {
   className?: string;
 }
 
+// SVG Icons for severity levels
+const AlertHighIcon = () => (
+  <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+  </svg>
+);
+
+const AlertMediumIcon = () => (
+  <svg className="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+  </svg>
+);
+
+const AlertLowIcon = () => (
+  <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
+
 const severityStyles = {
   high: {
     bg: 'bg-red-50',
     border: 'border-red-300',
-    icon: '🚨',
+    Icon: AlertHighIcon,
     iconBg: 'bg-red-100',
     text: 'text-red-700',
     badge: 'bg-red-100 text-red-700',
@@ -20,7 +39,7 @@ const severityStyles = {
   medium: {
     bg: 'bg-amber-50',
     border: 'border-amber-300',
-    icon: '⚠️',
+    Icon: AlertMediumIcon,
     iconBg: 'bg-amber-100',
     text: 'text-amber-700',
     badge: 'bg-amber-100 text-amber-700',
@@ -28,7 +47,7 @@ const severityStyles = {
   low: {
     bg: 'bg-blue-50',
     border: 'border-blue-300',
-    icon: 'ℹ️',
+    Icon: AlertLowIcon,
     iconBg: 'bg-blue-100',
     text: 'text-blue-700',
     badge: 'bg-blue-100 text-blue-700',
@@ -42,6 +61,7 @@ export const AnomalyAlert: React.FC<AnomalyAlertProps> = ({
 }) => {
   const { transaction, reason, severity } = anomaly;
   const styles = severityStyles[severity];
+  const IconComponent = styles.Icon;
 
   const handleClick = () => {
     if (onClick) {
@@ -99,7 +119,7 @@ export const AnomalyAlert: React.FC<AnomalyAlertProps> = ({
           flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
           ${styles.iconBg}
         `}>
-          <span className="text-lg">{styles.icon}</span>
+          <IconComponent />
         </div>
 
         <div className="flex-1 min-w-0">

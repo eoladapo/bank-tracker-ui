@@ -59,7 +59,8 @@ export const formatInsightValue = (
 /**
  * Get comparison color based on value
  */
-export const getComparisonColor = (value: number): string => {
+export const getComparisonColor = (value: number | undefined | null): string => {
+  if (value == null || isNaN(value)) return 'text-gray-500';
   if (value > 0) return 'text-emerald-600';
   if (value < 0) return 'text-red-600';
   return 'text-gray-500';
@@ -68,8 +69,9 @@ export const getComparisonColor = (value: number): string => {
 /**
  * Get comparison icon based on value
  */
-export const getComparisonIcon = (value: number): string => {
-  if (value > 0) return '↑';
-  if (value < 0) return '↓';
-  return '→';
+export const getComparisonIcon = (value: number | undefined | null): string => {
+  if (value == null || isNaN(value)) return '';
+  if (value > 0) return '↑ ';
+  if (value < 0) return '↓ ';
+  return '';
 };

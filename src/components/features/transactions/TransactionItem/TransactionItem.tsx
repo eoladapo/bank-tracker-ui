@@ -2,7 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import type { Transaction } from '../../../../types';
 import {
-  getCategoryIcon,
+  CategoryIcon,
   getSeverityColor,
   formatCurrency,
   formatTime,
@@ -19,7 +19,6 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
   onClick,
   showAnomalyBadge = true,
 }) => {
-  const categoryIcon = getCategoryIcon(transaction.category);
   const formattedAmount = formatCurrency(transaction.amount, transaction.type);
   const formattedTime = formatTime(transaction.date);
   const amountColor = transaction.type === 'debit' ? 'text-red-600' : 'text-green-600';
@@ -48,10 +47,10 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
       <div className="flex items-center gap-3">
         {/* Category Icon */}
         <div
-          className="flex-shrink-0 w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-2xl"
+          className="flex-shrink-0 w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-gray-600"
           aria-hidden="true"
         >
-          {categoryIcon}
+          <CategoryIcon category={transaction.category} className="w-6 h-6" />
         </div>
 
         {/* Transaction Details */}
@@ -63,13 +62,16 @@ export const TransactionItem: React.FC<TransactionItemProps> = ({
             {/* Anomaly Badge */}
             {showAnomalyBadge && transaction.isAnomaly && (
               <span
-                className={`flex-shrink-0 px-2 py-0.5 text-xs font-medium rounded-full border ${getSeverityColor(
+                className={`flex-shrink-0 px-2 py-0.5 text-xs font-medium rounded-full border flex items-center gap-1 ${getSeverityColor(
                   transaction.anomalySeverity
                 )}`}
                 title={transaction.anomalyReason || 'Unusual transaction'}
                 aria-label={`Anomaly: ${transaction.anomalySeverity || 'unknown'} severity`}
               >
-                ⚠️ {transaction.anomalySeverity || 'Anomaly'}
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                {transaction.anomalySeverity || 'Anomaly'}
               </span>
             )}
           </div>

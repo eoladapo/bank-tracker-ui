@@ -9,6 +9,7 @@ export interface MainLayoutProps {
   activeNavItem: string;
   onNavigate: (path: string) => void;
   onSettingsClick?: () => void;
+  onProfileClick?: () => void;
   showHeader?: boolean;
   showNavigation?: boolean;
   className?: string;
@@ -25,6 +26,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   activeNavItem,
   onNavigate,
   onSettingsClick,
+  onProfileClick,
   showHeader = true,
   showNavigation = true,
   className = '',
@@ -61,6 +63,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
         <Header
           userName={userName}
           onSettingsClick={onSettingsClick}
+          onProfileClick={onProfileClick}
         />
       )}
 
