@@ -142,3 +142,33 @@ export interface FinancialAdvice {
   priority: 'low' | 'medium' | 'high';
   category: string;
 }
+
+// Chart Types
+export interface CategoryChartProps {
+  data: CategoryBreakdown[];
+  onCategoryClick?: (category: string) => void;
+  variant?: 'pie' | 'donut';
+  showLegend?: boolean;
+  height?: number;
+}
+
+// Insight Card Types
+export interface InsightCardProps {
+  label: string;
+  value: string | number;
+  prefix?: string;
+  suffix?: string;
+  comparison?: {
+    value: number;
+    label?: string;
+  };
+  icon?: React.ReactNode;
+  variant?: 'default' | 'primary' | 'success' | 'warning' | 'error';
+  className?: string;
+}
+
+// Month Option Type
+export interface MonthOption {
+  value: string;
+  label: string;
+}
