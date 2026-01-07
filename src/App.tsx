@@ -17,6 +17,8 @@ const TransactionDetail = lazy(() => import('./pages/Transactions/TransactionDet
 const Insights = lazy(() => import('./pages/Insights/Insights'));
 const AI = lazy(() => import('./pages/AI/AI'));
 const Accounts = lazy(() => import('./pages/Accounts/Accounts'));
+const Profile = lazy(() => import('./pages/Profile/Profile'));
+const ChangePassword = lazy(() => import('./pages/Profile/ChangePassword'));
 
 // Loading fallback component
 const PageLoader = () => (
@@ -120,7 +122,15 @@ function App() {
               path="/profile"
               element={
                 <AuthGuard requireAuth={true}>
-                  <Dashboard />
+                  <Profile />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/profile/change-password"
+              element={
+                <AuthGuard requireAuth={true}>
+                  <ChangePassword />
                 </AuthGuard>
               }
             />
