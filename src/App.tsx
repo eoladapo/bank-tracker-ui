@@ -11,6 +11,8 @@ const Login = lazy(() => import('./pages/Auth/Login'));
 const Register = lazy(() => import('./pages/Auth/Register'));
 const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'));
+const Transactions = lazy(() => import('./pages/Transactions/Transactions'));
+const TransactionDetail = lazy(() => import('./pages/Transactions/TransactionDetail'));
 
 // Placeholder for Dashboard (to be implemented in later tasks)
 const Dashboard = () => (
@@ -77,6 +79,22 @@ function App() {
               element={
                 <AuthGuard requireAuth={true}>
                   <Dashboard />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/transactions"
+              element={
+                <AuthGuard requireAuth={true}>
+                  <Transactions />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/transactions/:id"
+              element={
+                <AuthGuard requireAuth={true}>
+                  <TransactionDetail />
                 </AuthGuard>
               }
             />
