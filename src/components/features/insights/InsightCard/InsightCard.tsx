@@ -46,7 +46,9 @@ export const InsightCard: React.FC<InsightCardProps> = ({
             <div className="mt-2 flex items-center gap-1">
               <span className={`text-sm font-medium ${getComparisonColor(comparison.value)}`}>
                 {getComparisonIcon(comparison.value)}
-                {Math.abs(comparison.value).toFixed(1)}%
+                {comparison.value != null && !isNaN(comparison.value) 
+                  ? `${Math.abs(comparison.value).toFixed(1)}%`
+                  : '—'}
               </span>
               {comparison.label && (
                 <span className="text-sm text-gray-500">{comparison.label}</span>

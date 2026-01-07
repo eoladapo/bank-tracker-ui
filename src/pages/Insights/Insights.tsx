@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAppDispatch } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { addToast } from '../../features/ui/uiSlice';
 import {
   useGetMonthlyInsightsQuery,
@@ -12,6 +12,7 @@ import { CategoryChart } from '../../components/charts';
 import { InsightCard } from '../../components/features/insights';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 import { Card } from '../../components/common/Card';
+import { MainLayout } from '../../components/layout';
 import {
   generateMonthOptions,
   getCurrentMonth,
@@ -33,11 +34,18 @@ const itemVariants = {
 
 export const Insights: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   
   const monthOptions = useMemo(() => generateMonthOptions(), []);
   const previousMonth = useMemo(() => getPreviousMonth(selectedMonth), [selectedMonth]);
+
+  // Navigation handler
+  const handleNavigate = useCallback((path: string) => {
+    navigate(path);
+  }, [navigate]);
 
   // Fetch insights data
   const {
@@ -82,48 +90,70 @@ export const Insights: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-bg-secondary p-4 space-y-4">
-        <div className="flex justify-between items-center mb-4">
-          <LoadingSkeleton variant="text" width={150} height={28} />
-          <LoadingSkeleton variant="rectangular" width={150} height={40} />
+      <MainLayout
+        userName={user?.name}
+        activeNavItem={location.pathname}
+        onNavigate={handleNavigate}
+        showHeader={false}
+        pageKey="insights"
+      >
+        <div className="p-4 space-y-4">
+          <div className="flex justify-between items-center mb-4">
+            <LoadingSkeleton variant="text" width={150} height={28} />
+            <LoadingSkeleton variant="rectangular" width={150} height={40} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <LoadingSkeleton variant="card" height={100} />
+            <LoadingSkeleton variant="card" height={100} />
+          </div>
+          <LoadingSkeleton variant="card" height={300} />
+          <LoadingSkeleton variant="card" height={120} />
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          <LoadingSkeleton variant="card" height={100} />
-          <LoadingSkeleton variant="card" height={100} />
-        </div>
-        <LoadingSkeleton variant="card" height={300} />
-        <LoadingSkeleton variant="card" height={120} />
-      </div>
+      </MainLayout>
     );
   }
 
   // Error state
   if (isMonthlyError) {
     return (
-      <div className="min-h-screen bg-bg-secondary p-4 flex flex-col items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+      <MainLayout
+        userName={user?.name}
+        activeNavItem={location.pathname}
+        onNavigate={handleNavigate}
+        showHeader={false}
+        pageKey="insights"
+      >
+        <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load insights</h3>
+            <p className="text-gray-600 mb-4">Something went wrong. Please try again.</p>
+            <button
+              onClick={() => refetchMonthly()}
+              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+            >
+              Try Again
+            </button>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load insights</h3>
-          <p className="text-gray-600 mb-4">Something went wrong. Please try again.</p>
-          <button
-            onClick={() => refetchMonthly()}
-            className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-          >
-            Try Again
-          </button>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   const hasData = monthlyInsight || categoryBreakdown;
 
   return (
-    <div className="min-h-screen bg-bg-secondary">
+    <MainLayout
+      userName={user?.name}
+      activeNavItem={location.pathname}
+      onNavigate={handleNavigate}
+      showHeader={false}
+      pageKey="insights"
+    >
       <div className="p-4">
         {/* Header with Month Selector */}
         <div className="flex justify-between items-center mb-6">
@@ -253,21 +283,23 @@ export const Insights: React.FC = () => {
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Spending Change</span>
                         <span className={`font-semibold ${
-                          comparison.spendingChange > 0 ? 'text-red-600' : 
-                          comparison.spendingChange < 0 ? 'text-emerald-600' : 'text-gray-600'
+                          (comparison.spendingChange ?? 0) > 0 ? 'text-red-600' : 
+                          (comparison.spendingChange ?? 0) < 0 ? 'text-emerald-600' : 'text-gray-600'
                         }`}>
-                          {comparison.spendingChange > 0 ? '+' : ''}
-                          {comparison.spendingChange.toFixed(1)}%
+                          {comparison.spendingChange != null && !isNaN(comparison.spendingChange) 
+                            ? `${comparison.spendingChange > 0 ? '+' : ''}${comparison.spendingChange.toFixed(1)}%`
+                            : '—'}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-600">Income Change</span>
                         <span className={`font-semibold ${
-                          comparison.incomeChange > 0 ? 'text-emerald-600' : 
-                          comparison.incomeChange < 0 ? 'text-red-600' : 'text-gray-600'
+                          (comparison.incomeChange ?? 0) > 0 ? 'text-emerald-600' : 
+                          (comparison.incomeChange ?? 0) < 0 ? 'text-red-600' : 'text-gray-600'
                         }`}>
-                          {comparison.incomeChange > 0 ? '+' : ''}
-                          {comparison.incomeChange.toFixed(1)}%
+                          {comparison.incomeChange != null && !isNaN(comparison.incomeChange)
+                            ? `${comparison.incomeChange > 0 ? '+' : ''}${comparison.incomeChange.toFixed(1)}%`
+                            : '—'}
                         </span>
                       </div>
                     </div>
@@ -297,7 +329,7 @@ export const Insights: React.FC = () => {
           </motion.div>
         )}
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

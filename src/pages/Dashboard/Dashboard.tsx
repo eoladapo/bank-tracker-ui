@@ -1,5 +1,5 @@
 import React, { useCallback, useRef, useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppSelector, useAppDispatch } from '../../app/hooks';
 import { addToast } from '../../features/ui/uiSlice';
@@ -12,6 +12,7 @@ import { TransactionItem } from '../../components/features/transactions';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 import { Card } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
+import { MainLayout } from '../../components/layout';
 import { getCurrentMonth, getPreviousMonth } from '../../utils/insights.utils';
 
 const RECENT_TRANSACTIONS_LIMIT = 5;
@@ -31,12 +32,18 @@ const itemVariants = {
 
 export const Dashboard: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
   const containerRef = useRef<HTMLDivElement>(null);
   
   const user = useAppSelector((state) => state.auth.user);
   const currentMonth = useMemo(() => getCurrentMonth(), []);
   const previousMonth = useMemo(() => getPreviousMonth(currentMonth), [currentMonth]);
+
+  // Navigation handler
+  const handleNavigate = useCallback((path: string) => {
+    navigate(path);
+  }, [navigate]);
 
   // Pull-to-refresh state
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -175,45 +182,61 @@ export const Dashboard: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-bg-secondary p-4 space-y-4">
-        {/* Balance Card Skeleton */}
-        <LoadingSkeleton variant="card" height={140} />
-        
-        {/* Summary Cards Skeleton */}
-        <div className="grid grid-cols-2 gap-4">
-          <LoadingSkeleton variant="card" height={100} />
-          <LoadingSkeleton variant="card" height={100} />
+      <MainLayout
+        userName={user?.name}
+        activeNavItem={location.pathname}
+        onNavigate={handleNavigate}
+        showHeader={false}
+        pageKey="dashboard"
+      >
+        <div className="p-4 space-y-4">
+          {/* Balance Card Skeleton */}
+          <LoadingSkeleton variant="card" height={140} />
+          
+          {/* Summary Cards Skeleton */}
+          <div className="grid grid-cols-2 gap-4">
+            <LoadingSkeleton variant="card" height={100} />
+            <LoadingSkeleton variant="card" height={100} />
+          </div>
+          
+          {/* Chart Skeleton */}
+          <LoadingSkeleton variant="card" height={300} />
+          
+          {/* Recent Transactions Skeleton */}
+          <LoadingSkeleton variant="text" width={180} height={24} />
+          {[1, 2, 3, 4, 5].map((i) => (
+            <LoadingSkeleton key={i} variant="card" height={80} />
+          ))}
         </div>
-        
-        {/* Chart Skeleton */}
-        <LoadingSkeleton variant="card" height={300} />
-        
-        {/* Recent Transactions Skeleton */}
-        <LoadingSkeleton variant="text" width={180} height={24} />
-        {[1, 2, 3, 4, 5].map((i) => (
-          <LoadingSkeleton key={i} variant="card" height={80} />
-        ))}
-      </div>
+      </MainLayout>
     );
   }
 
   // Error state
   if (isAccountsError) {
     return (
-      <div className="min-h-screen bg-bg-secondary p-4 flex flex-col items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+      <MainLayout
+        userName={user?.name}
+        activeNavItem={location.pathname}
+        onNavigate={handleNavigate}
+        showHeader={false}
+        pageKey="dashboard"
+      >
+        <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load dashboard</h3>
+            <p className="text-gray-600 mb-4">Something went wrong. Please try again.</p>
+            <Button variant="primary" onClick={() => refetchAll()}>
+              Try Again
+            </Button>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load dashboard</h3>
-          <p className="text-gray-600 mb-4">Something went wrong. Please try again.</p>
-          <Button variant="primary" onClick={() => refetchAll()}>
-            Try Again
-          </Button>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
@@ -223,7 +246,13 @@ export const Dashboard: React.FC = () => {
   // Empty state - no accounts linked
   if (!hasAccounts) {
     return (
-      <div className="min-h-screen bg-bg-secondary">
+      <MainLayout
+        userName={user?.name}
+        activeNavItem={location.pathname}
+        onNavigate={handleNavigate}
+        showHeader={false}
+        pageKey="dashboard"
+      >
         <div className="p-4">
           {/* Header */}
           <div className="mb-6">
@@ -255,164 +284,171 @@ export const Dashboard: React.FC = () => {
             </Button>
           </motion.div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   return (
-    <div
-      ref={containerRef}
-      className="min-h-screen bg-bg-secondary"
-      onTouchStart={handleTouchStart}
-      onTouchMove={handleTouchMove}
-      onTouchEnd={handleTouchEnd}
+    <MainLayout
+      userName={user?.name}
+      activeNavItem={location.pathname}
+      onNavigate={handleNavigate}
+      showHeader={false}
+      pageKey="dashboard"
     >
-      {/* Pull-to-refresh indicator */}
-      <AnimatePresence>
-        {(pullDistance > 0 || isRefreshing) && (
-          <motion.div
-            initial={{ height: 0 }}
-            animate={{ height: pullDistance > 0 ? pullDistance : 60 }}
-            exit={{ height: 0 }}
-            className="flex items-center justify-center bg-primary-50 overflow-hidden"
-          >
+      <div
+        ref={containerRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Pull-to-refresh indicator */}
+        <AnimatePresence>
+          {(pullDistance > 0 || isRefreshing) && (
             <motion.div
-              animate={{ rotate: isRefreshing ? 360 : 0 }}
-              transition={{ duration: 1, repeat: isRefreshing ? Infinity : 0, ease: 'linear' }}
-              className="w-6 h-6"
+              initial={{ height: 0 }}
+              animate={{ height: pullDistance > 0 ? pullDistance : 60 }}
+              exit={{ height: 0 }}
+              className="flex items-center justify-center bg-primary-50 overflow-hidden"
             >
-              <svg className="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </motion.div>
-            <span className="ml-2 text-sm text-primary-600">
-              {isRefreshing ? 'Refreshing...' : pullDistance > 60 ? 'Release to refresh' : 'Pull to refresh'}
-            </span>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="p-4">
-        {/* Header */}
-        <div className="mb-6">
-          <p className="text-sm text-gray-500">Welcome back,</p>
-          <h1 className="text-2xl font-bold text-gray-900">{user?.name || 'there'}</h1>
-        </div>
-
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-          className="space-y-6"
-        >
-          {/* Total Balance Card */}
-          <motion.div variants={itemVariants}>
-            <Card className="bg-gradient-to-br from-primary-600 to-primary-700">
-              <Card.Body className="py-6">
-                <div className="text-center">
-                  <p className="text-sm font-medium text-primary-100 mb-1">Total Balance</p>
-                  <p className="text-4xl font-bold text-white">
-                    ₦{totalBalance.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </p>
-                  <p className="text-sm text-primary-200 mt-2">
-                    Across {accounts?.length || 0} account{accounts?.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
-              </Card.Body>
-            </Card>
-          </motion.div>
-
-
-          {/* Monthly Summary Cards */}
-          <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
-            <InsightCard
-              label="Monthly Spending"
-              value={monthlyInsight?.totalSpending || 0}
-              prefix="₦"
-              comparison={comparison ? {
-                value: comparison.spendingChange,
-                label: 'vs last month',
-              } : undefined}
-              variant="default"
-            />
-            <InsightCard
-              label="Monthly Income"
-              value={monthlyInsight?.totalIncome || 0}
-              prefix="₦"
-              comparison={comparison ? {
-                value: comparison.incomeChange,
-                label: 'vs last month',
-              } : undefined}
-              variant="success"
-            />
-          </motion.div>
-
-          {/* Spending by Category Chart */}
-          {monthlyInsight?.categoryData && monthlyInsight.categoryData.length > 0 && (
-            <motion.div variants={itemVariants}>
-              <Card>
-                <Card.Header>
-                  <h2 className="text-lg font-semibold text-gray-900">Spending by Category</h2>
-                  <p className="text-sm text-gray-500 mt-1">Tap a category to see transactions</p>
-                </Card.Header>
-                <Card.Body>
-                  <CategoryChart
-                    data={monthlyInsight.categoryData}
-                    onCategoryClick={handleCategoryClick}
-                    variant="donut"
-                    height={280}
-                  />
-                </Card.Body>
-              </Card>
+              <motion.div
+                animate={{ rotate: isRefreshing ? 360 : 0 }}
+                transition={{ duration: 1, repeat: isRefreshing ? Infinity : 0, ease: 'linear' }}
+                className="w-6 h-6"
+              >
+                <svg className="w-6 h-6 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+              </motion.div>
+              <span className="ml-2 text-sm text-primary-600">
+                {isRefreshing ? 'Refreshing...' : pullDistance > 60 ? 'Release to refresh' : 'Pull to refresh'}
+              </span>
             </motion.div>
           )}
+        </AnimatePresence>
 
-          {/* Recent Transactions */}
-          <motion.div variants={itemVariants}>
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
-              {recentTransactions.length > 0 && (
-                <button
-                  onClick={handleViewAllTransactions}
-                  className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
-                >
-                  View All
-                </button>
-              )}
-            </div>
+        <div className="p-4">
+          {/* Header */}
+          <div className="mb-6">
+            <p className="text-sm text-gray-500">Welcome back,</p>
+            <h1 className="text-2xl font-bold text-gray-900">{user?.name || 'there'}</h1>
+          </div>
 
-            {recentTransactions.length === 0 ? (
-              <Card>
-                <Card.Body>
-                  <div className="text-center py-8">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                      </svg>
-                    </div>
-                    <p className="text-gray-500">No transactions yet</p>
-                    <p className="text-sm text-gray-400 mt-1">
-                      Sync your accounts to see transactions
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-6"
+          >
+            {/* Total Balance Card */}
+            <motion.div variants={itemVariants}>
+              <Card className="bg-gradient-to-br from-primary-600 to-primary-700">
+                <Card.Body className="py-6">
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-primary-100 mb-1">Total Balance</p>
+                    <p className="text-4xl font-bold text-white">
+                      ₦{totalBalance.toLocaleString('en-NG', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </p>
+                    <p className="text-sm text-primary-200 mt-2">
+                      Across {accounts?.length || 0} account{accounts?.length !== 1 ? 's' : ''}
                     </p>
                   </div>
                 </Card.Body>
               </Card>
-            ) : (
-              <div className="space-y-3">
-                {recentTransactions.map((transaction) => (
-                  <TransactionItem
-                    key={transaction.id}
-                    transaction={transaction}
-                    onClick={handleTransactionClick}
-                    showAnomalyBadge={true}
-                  />
-                ))}
-              </div>
+            </motion.div>
+
+
+            {/* Monthly Summary Cards */}
+            <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4">
+              <InsightCard
+                label="Monthly Spending"
+                value={monthlyInsight?.totalSpending || 0}
+                prefix="₦"
+                comparison={comparison ? {
+                  value: comparison.spendingChange,
+                  label: 'vs last month',
+                } : undefined}
+                variant="default"
+              />
+              <InsightCard
+                label="Monthly Income"
+                value={monthlyInsight?.totalIncome || 0}
+                prefix="₦"
+                comparison={comparison ? {
+                  value: comparison.incomeChange,
+                  label: 'vs last month',
+                } : undefined}
+                variant="success"
+              />
+            </motion.div>
+
+            {/* Spending by Category Chart */}
+            {monthlyInsight?.categoryData && monthlyInsight.categoryData.length > 0 && (
+              <motion.div variants={itemVariants}>
+                <Card>
+                  <Card.Header>
+                    <h2 className="text-lg font-semibold text-gray-900">Spending by Category</h2>
+                    <p className="text-sm text-gray-500 mt-1">Tap a category to see transactions</p>
+                  </Card.Header>
+                  <Card.Body>
+                    <CategoryChart
+                      data={monthlyInsight.categoryData}
+                      onCategoryClick={handleCategoryClick}
+                      variant="donut"
+                      height={280}
+                    />
+                  </Card.Body>
+                </Card>
+              </motion.div>
             )}
+
+            {/* Recent Transactions */}
+            <motion.div variants={itemVariants}>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
+                {recentTransactions.length > 0 && (
+                  <button
+                    onClick={handleViewAllTransactions}
+                    className="text-sm font-medium text-primary-600 hover:text-primary-700 transition-colors"
+                  >
+                    View All
+                  </button>
+                )}
+              </div>
+
+              {recentTransactions.length === 0 ? (
+                <Card>
+                  <Card.Body>
+                    <div className="text-center py-8">
+                      <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-gray-100 flex items-center justify-center">
+                        <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                      </div>
+                      <p className="text-gray-500">No transactions yet</p>
+                      <p className="text-sm text-gray-400 mt-1">
+                        Sync your accounts to see transactions
+                      </p>
+                    </div>
+                  </Card.Body>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {recentTransactions.map((transaction) => (
+                    <TransactionItem
+                      key={transaction.id}
+                      transaction={transaction}
+                      onClick={handleTransactionClick}
+                      showAnomalyBadge={true}
+                    />
+                  ))}
+                </div>
+              )}
+            </motion.div>
           </motion.div>
-        </motion.div>
+        </div>
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

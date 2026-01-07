@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAppDispatch } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { addToast } from '../../features/ui/uiSlice';
 import {
   useGetAccountsQuery,
@@ -12,6 +13,7 @@ import { BankAccountCard } from '../../components/features/accounts';
 import { Button } from '../../components/common/Button';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 import { ConfirmModal } from '../../components/common/Modal';
+import { MainLayout } from '../../components/layout';
 
 // Mono Connect widget types
 declare global {
@@ -47,7 +49,10 @@ const itemVariants = {
 
 
 export const Accounts: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
   const { data: accounts, isLoading, isError, refetch } = useGetAccountsQuery();
   const [syncAccount, { isLoading: isSyncingAccount }] = useSyncAccountMutation();
   const [unlinkAccount, { isLoading: isUnlinking }] = useUnlinkAccountMutation();
@@ -56,6 +61,11 @@ export const Accounts: React.FC = () => {
   const [syncingAccountId, setSyncingAccountId] = useState<string | null>(null);
   const [unlinkModalOpen, setUnlinkModalOpen] = useState(false);
   const [accountToUnlink, setAccountToUnlink] = useState<string | null>(null);
+
+  // Navigation handler
+  const handleNavigate = useCallback((path: string) => {
+    navigate(path);
+  }, [navigate]);
 
   const handleSync = useCallback(async (accountId: string) => {
     setSyncingAccountId(accountId);
@@ -169,35 +179,51 @@ export const Accounts: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="p-4 space-y-4">
-        <div className="flex justify-between items-center mb-6">
-          <LoadingSkeleton variant="text" width={150} height={28} />
-          <LoadingSkeleton variant="rectangular" width={120} height={44} />
+      <MainLayout
+        userName={user?.name}
+        activeNavItem={location.pathname}
+        onNavigate={handleNavigate}
+        showHeader={false}
+        pageKey="accounts"
+      >
+        <div className="p-4 space-y-4">
+          <div className="flex justify-between items-center mb-6">
+            <LoadingSkeleton variant="text" width={150} height={28} />
+            <LoadingSkeleton variant="rectangular" width={120} height={44} />
+          </div>
+          {[1, 2, 3].map((i) => (
+            <LoadingSkeleton key={i} variant="card" height={160} />
+          ))}
         </div>
-        {[1, 2, 3].map((i) => (
-          <LoadingSkeleton key={i} variant="card" height={160} />
-        ))}
-      </div>
+      </MainLayout>
     );
   }
 
   // Error state
   if (isError) {
     return (
-      <div className="p-4 flex flex-col items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+      <MainLayout
+        userName={user?.name}
+        activeNavItem={location.pathname}
+        onNavigate={handleNavigate}
+        showHeader={false}
+        pageKey="accounts"
+      >
+        <div className="p-4 flex flex-col items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load accounts</h3>
+            <p className="text-gray-600 mb-4">Something went wrong. Please try again.</p>
+            <Button variant="primary" onClick={() => refetch()}>
+              Try Again
+            </Button>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load accounts</h3>
-          <p className="text-gray-600 mb-4">Something went wrong. Please try again.</p>
-          <Button variant="primary" onClick={() => refetch()}>
-            Try Again
-          </Button>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
@@ -205,7 +231,14 @@ export const Accounts: React.FC = () => {
   const hasAccounts = accounts && accounts.length > 0;
 
   return (
-    <div className="p-4">
+    <MainLayout
+      userName={user?.name}
+      activeNavItem={location.pathname}
+      onNavigate={handleNavigate}
+      showHeader={false}
+      pageKey="accounts"
+    >
+      <div className="p-4">
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold text-gray-900">Bank Accounts</h1>
@@ -280,7 +313,8 @@ export const Accounts: React.FC = () => {
         confirmVariant="primary"
         isConfirmLoading={isUnlinking}
       />
-    </div>
+      </div>
+    </MainLayout>
   );
 };
 

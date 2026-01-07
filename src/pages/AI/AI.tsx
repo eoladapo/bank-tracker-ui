@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAppDispatch } from '../../app/hooks';
+import { useAppDispatch, useAppSelector } from '../../app/hooks';
 import { addToast } from '../../features/ui/uiSlice';
 import {
   useGetAnomaliesQuery,
@@ -13,6 +13,7 @@ import { AIAdvicePanel } from '../../components/features/ai/AIAdvicePanel';
 import { AnomalyAlert } from '../../components/features/ai/AnomalyAlert';
 import { LoadingSkeleton } from '../../components/common/LoadingSkeleton';
 import { Card } from '../../components/common/Card';
+import { MainLayout } from '../../components/layout';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -29,7 +30,14 @@ const itemVariants = {
 
 export const AI: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useAppDispatch();
+  const user = useAppSelector((state) => state.auth.user);
+
+  // Navigation handler
+  const handleNavigate = useCallback((path: string) => {
+    navigate(path);
+  }, [navigate]);
 
   // Fetch AI data
   const {
@@ -71,43 +79,65 @@ export const AI: React.FC = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-bg-secondary p-4 space-y-4">
-        <LoadingSkeleton variant="text" width={150} height={28} />
-        <LoadingSkeleton variant="card" height={150} />
-        <LoadingSkeleton variant="card" height={200} />
-        <LoadingSkeleton variant="card" height={300} />
-        <LoadingSkeleton variant="card" height={200} />
-      </div>
+      <MainLayout
+        userName={user?.name}
+        activeNavItem={location.pathname}
+        onNavigate={handleNavigate}
+        showHeader={false}
+        pageKey="ai"
+      >
+        <div className="p-4 space-y-4">
+          <LoadingSkeleton variant="text" width={150} height={28} />
+          <LoadingSkeleton variant="card" height={150} />
+          <LoadingSkeleton variant="card" height={200} />
+          <LoadingSkeleton variant="card" height={300} />
+          <LoadingSkeleton variant="card" height={200} />
+        </div>
+      </MainLayout>
     );
   }
 
   // Error state
   if (isAnomaliesError) {
     return (
-      <div className="min-h-screen bg-bg-secondary p-4 flex flex-col items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-            <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-            </svg>
+      <MainLayout
+        userName={user?.name}
+        activeNavItem={location.pathname}
+        onNavigate={handleNavigate}
+        showHeader={false}
+        pageKey="ai"
+      >
+        <div className="p-4 flex flex-col items-center justify-center min-h-[60vh]">
+          <div className="text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+              <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load AI features</h3>
+            <p className="text-gray-600 mb-4">Something went wrong. Please try again.</p>
+            <button
+              onClick={() => refetchAnomalies()}
+              className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
+            >
+              Try Again
+            </button>
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Failed to load AI features</h3>
-          <p className="text-gray-600 mb-4">Something went wrong. Please try again.</p>
-          <button
-            onClick={() => refetchAnomalies()}
-            className="px-4 py-2 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors"
-          >
-            Try Again
-          </button>
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   const hasData = anomalies?.length || advice?.recommendations?.length || predictions || insights;
 
   return (
-    <div className="min-h-screen bg-bg-secondary">
+    <MainLayout
+      userName={user?.name}
+      activeNavItem={location.pathname}
+      onNavigate={handleNavigate}
+      showHeader={false}
+      pageKey="ai"
+    >
       <div className="p-4">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -307,7 +337,7 @@ export const AI: React.FC = () => {
           </motion.div>
         )}
       </div>
-    </div>
+    </MainLayout>
   );
 };
 

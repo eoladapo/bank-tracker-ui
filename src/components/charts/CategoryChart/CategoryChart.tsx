@@ -72,7 +72,10 @@ export const CategoryChart: React.FC<CategoryChartProps> = ({
     [onCategoryClick]
   );
 
-  if (!data || data.length === 0) {
+  // Ensure data is an array
+  const chartData = Array.isArray(data) ? data : [];
+
+  if (chartData.length === 0) {
     return (
       <div 
         className="flex items-center justify-center text-gray-500"
@@ -93,12 +96,12 @@ export const CategoryChart: React.FC<CategoryChartProps> = ({
       className="w-full" 
       style={{ height }}
       role="img"
-      aria-label={`Spending breakdown chart showing ${data.length} categories`}
+      aria-label={`Spending breakdown chart showing ${chartData.length} categories`}
     >
       <ResponsiveContainer width="100%" height="100%">
         <PieChart>
           <Pie
-            data={data as unknown as Record<string, unknown>[]}
+            data={chartData as unknown as Record<string, unknown>[]}
             cx="50%"
             cy="50%"
             innerRadius={innerRadius}
@@ -109,7 +112,7 @@ export const CategoryChart: React.FC<CategoryChartProps> = ({
             onClick={(entry) => handleClick(entry as unknown as CategoryBreakdown)}
             style={{ cursor: onCategoryClick ? 'pointer' : 'default' }}
           >
-            {data.map((entry, index) => (
+            {chartData.map((entry, index) => (
               <Cell
                 key={`cell-${entry.category}-${index}`}
                 fill={getCategoryColor(entry.category, index)}
