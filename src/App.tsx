@@ -14,6 +14,7 @@ const Login = lazy(() => import('./pages/Auth/Login'));
 const Register = lazy(() => import('./pages/Auth/Register'));
 const ForgotPassword = lazy(() => import('./pages/Auth/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/Auth/ResetPassword'));
+const VerifyEmail = lazy(() => import('./pages/Auth/VerifyEmail'));
 const Dashboard = lazy(() => import('./pages/Dashboard/Dashboard'));
 const Transactions = lazy(() => import('./pages/Transactions/Transactions'));
 const TransactionDetail = lazy(() => import('./pages/Transactions/TransactionDetail'));
@@ -72,6 +73,14 @@ const AppContent = () => {
             element={
               <AuthGuard requireAuth={false}>
                 <ResetPassword />
+              </AuthGuard>
+            }
+          />
+          <Route
+            path="/verify-email"
+            element={
+              <AuthGuard requireAuth={false}>
+                <VerifyEmail />
               </AuthGuard>
             }
           />

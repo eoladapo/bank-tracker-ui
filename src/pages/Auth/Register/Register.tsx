@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAppDispatch } from '../../../app/hooks';
-import { setCredentials, setError } from '../../../features/auth/authSlice';
+import { setError } from '../../../features/auth/authSlice';
 import { useRegisterMutation } from '../../../features/auth/authApi';
 import { addToast } from '../../../features/ui/uiSlice';
 import { Input } from '../../../components/common/Input';
@@ -39,22 +39,14 @@ export const Register: React.FC = () => {
       }).unwrap();
       
       dispatch(
-        setCredentials({
-          user: result.user,
-          accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
-        })
-      );
-      
-      dispatch(
         addToast({
           type: 'success',
-          message: 'Account created! Please verify your email.',
+          message: 'Account created! Please check your email for a verification code.',
         })
       );
       
-      navigate('/dashboard');
-    } catch (err) {
+      navigate(`/verify-email?email=${encodeURIComponent(result.email)}`);
+    } catch {
       const errorMessage = 'Registration failed. Please try again.';
       dispatch(setError(errorMessage));
       dispatch(

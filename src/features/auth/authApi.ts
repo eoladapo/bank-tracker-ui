@@ -7,6 +7,19 @@ export interface AuthResponse {
   refreshToken: string;
 }
 
+export interface RegisterResponse {
+  message: string;
+  email: string;
+}
+
+export interface VerifyEmailResponse {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+  accessTokenExpiresIn: number;
+  refreshTokenExpiresIn: number;
+}
+
 export interface RefreshResponse {
   accessToken: string;
   refreshToken: string;
@@ -23,6 +36,10 @@ export interface ResetPasswordRequest {
 
 export interface VerifyEmailRequest {
   token: string;
+}
+
+export interface ResendVerificationRequest {
+  email: string;
 }
 
 export interface ChangePasswordRequest {
@@ -44,7 +61,7 @@ export const authApi = api.injectEndpoints({
       }),
     }),
 
-    register: builder.mutation<AuthResponse, RegisterData>({
+    register: builder.mutation<RegisterResponse, RegisterData>({
       query: (data) => ({
         url: '/auth/register',
         method: 'POST',
@@ -84,7 +101,7 @@ export const authApi = api.injectEndpoints({
       }),
     }),
 
-    verifyEmail: builder.mutation<MessageResponse, VerifyEmailRequest>({
+    verifyEmail: builder.mutation<VerifyEmailResponse, VerifyEmailRequest>({
       query: (data) => ({
         url: '/auth/verify-email',
         method: 'POST',
@@ -93,10 +110,11 @@ export const authApi = api.injectEndpoints({
       invalidatesTags: ['User'],
     }),
 
-    resendVerification: builder.mutation<MessageResponse, void>({
-      query: () => ({
+    resendVerification: builder.mutation<MessageResponse, ResendVerificationRequest>({
+      query: (data) => ({
         url: '/auth/resend-verification',
         method: 'POST',
+        body: data,
       }),
     }),
 
