@@ -2,10 +2,7 @@ import { api } from '../api/baseApi';
 import type {
   Anomaly,
   FinancialAdvice,
-  SpendingPrediction,
-  AIInsight,
   Transaction,
-  CategoryBreakdown,
 } from '../../types';
 
 // Response types matching backend

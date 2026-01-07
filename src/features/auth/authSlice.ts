@@ -1,13 +1,24 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { AuthState, User } from '../../types';
+import {
+  getStoredTokens,
+  storeTokens,
+  clearTokens,
+  getStoredUser,
+  storeUser,
+} from '../../utils/storage';
+
+// Initialize state from localStorage for persistence
+const storedTokens = getStoredTokens();
+const storedUser = getStoredUser<User>();
 
 const initialState: AuthState = {
-  user: null,
-  accessToken: null,
-  refreshToken: null,
-  isAuthenticated: false,
-  isLoading: true,
+  user: storedUser,
+  accessToken: storedTokens.accessToken,
+  refreshToken: storedTokens.refreshToken,
+  isAuthenticated: !!(storedTokens.accessToken && storedUser),
+  isLoading: !storedTokens.accessToken, // Only loading if no stored token
   error: null,
 };
 
@@ -29,6 +40,9 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.isLoading = false;
       state.error = null;
+      // Persist to localStorage
+      storeTokens(action.payload.accessToken, action.payload.refreshToken);
+      storeUser(action.payload.user);
     },
     updateTokens: (
       state,
@@ -39,6 +53,8 @@ const authSlice = createSlice({
     ) => {
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
+      // Persist to localStorage
+      storeTokens(action.payload.accessToken, action.payload.refreshToken);
     },
     logout: (state) => {
       state.user = null;
@@ -46,6 +62,8 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.isAuthenticated = false;
       state.error = null;
+      // Clear from localStorage
+      clearTokens();
     },
     setLoading: (state, action: PayloadAction<boolean>) => {
       state.isLoading = action.payload;

@@ -1,5 +1,4 @@
 import { api } from '../api/baseApi';
-import type { User } from '../../types';
 
 export interface UpdateUserRequest {
   name?: string;

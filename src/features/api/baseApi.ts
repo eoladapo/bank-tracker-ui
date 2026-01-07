@@ -6,6 +6,7 @@ import type {
 } from '@reduxjs/toolkit/query';
 import type { RootState } from '../../app/store';
 import { updateTokens, logout } from '../auth/authSlice';
+import { setOffline } from '../ui/uiSlice';
 
 const baseQuery = fetchBaseQuery({
   baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
@@ -24,6 +25,13 @@ const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   let result = await baseQuery(args, api, extraOptions);
+
+  // Handle network errors - set offline state
+  if (result.error && 'status' in result.error) {
+    if (result.error.status === 'FETCH_ERROR') {
+      api.dispatch(setOffline(true));
+    }
+  }
 
   if (result.error?.status === 401) {
     const refreshToken = (api.getState() as RootState).auth.refreshToken;
@@ -70,4 +78,9 @@ export const api = createApi({
   baseQuery: baseQueryWithReauth,
   tagTypes: ['Accounts', 'Transactions', 'Insights', 'User', 'AI'],
   endpoints: () => ({}),
+  // Enable cache persistence and stale-while-revalidate behavior
+  keepUnusedDataFor: 300, // Keep unused data for 5 minutes (in seconds)
+  refetchOnMountOrArgChange: false, // Don't refetch on mount, use cached data
+  refetchOnFocus: true, // Refetch when window regains focus
+  refetchOnReconnect: true, // Refetch when network reconnects
 });
