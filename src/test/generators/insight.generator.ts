@@ -38,12 +38,17 @@ export const monthlyInsightArb: fc.Arbitrary<MonthlyInsight> = fc.record({
 
 export const monthComparisonArb: fc.Arbitrary<MonthComparison> = fc
   .tuple(monthlyInsightArb, monthlyInsightArb)
-  .map(([curr, prev]) => ({
-    currentMonth: curr,
-    previousMonth: prev,
-    spendingChange: prev.totalSpending === 0 ? 0 : ((curr.totalSpending - prev.totalSpending) / prev.totalSpending) * 100,
-    incomeChange: prev.totalIncome === 0 ? 0 : ((curr.totalIncome - prev.totalIncome) / prev.totalIncome) * 100,
-  }));
+  .map(([curr, prev]) => {
+    const spendingChange = prev.totalSpending === 0 ? 0 : ((curr.totalSpending - prev.totalSpending) / prev.totalSpending) * 100;
+    const incomeChange = prev.totalIncome === 0 ? 0 : ((curr.totalIncome - prev.totalIncome) / prev.totalIncome) * 100;
+    return {
+      currentMonth: curr,
+      previousMonth: prev,
+      percentageChange: spendingChange,
+      spendingChange,
+      incomeChange,
+    };
+  });
 
 export const aiInsightArb: fc.Arbitrary<AIInsight> = fc.record({
   summary: fc.string({ minLength: 10, maxLength: 500 }),
